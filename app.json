@@ -1,0 +1,10 @@
+{
+  "name": "Webhook framwork for interacting with jira",
+  "description": "An application to catch webhooks and act acording to the logic you define.",
+  "keywords": [
+    "flask",
+    "python",
+    "jira",
+    "webhooks"
+  ]
+}
