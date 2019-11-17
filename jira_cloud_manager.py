@@ -82,7 +82,7 @@ def function_sprint_update_response():
 #route to catch webhook for new issued from DOC project 
 @app.route('/newdocproject',methods=['POST'])
 def function_doc_new_issue_response():
-  return doc_new_issues.new_doc_issue_hook(request.data, jira)
+  return doc_new_issues.new_doc_issue(request.data, jira)
 
 #route to catch webhook for new issued from DOC project 
 @app.route('/updatedocproject',methods=['POST'])

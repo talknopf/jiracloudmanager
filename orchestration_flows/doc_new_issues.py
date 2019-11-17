@@ -10,7 +10,7 @@ from worker_all_priority import conn
 import jira_generate_payload
 import jira_issue_toolbox as toolbox
 
-def new_update_issue(request_json_payload, jira=j.setup_jira_object()):
+def new_doc_issue(request_json_payload, jira=j.setup_jira_object()):
     data = json.loads(request_json_payload)
     payload = jira_generate_payload.generate_payload(data)
 
