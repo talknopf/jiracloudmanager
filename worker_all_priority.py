@@ -11,7 +11,7 @@ sys.path.append('flows/')
 sys.path.append('tools/')
 
 #tools modules
-import cloudinary_teams
+import team_members
 import yentel_slack as slack
 import jira_issue_toolbox as toolbox
 import generate_payload_by_id

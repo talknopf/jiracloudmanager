@@ -26,13 +26,10 @@ import google_auth
 import jira_issue_toolbox as toolbox
 
 #load logic modules
-import jira_updated_issue
-import jira_new_issue
 import doc_new_issues
 import github_parsing_flow
 import doc_update_issues
 import jira_itissues
-import jira_qa_new_issues
 import jira_comment
 import issue_update_flow
 import issue_created_flow
@@ -68,7 +65,6 @@ def home():
     return redirect("/google/login", code=302)
     
 #logic flows start here
-
 #route to catch webhook from Jira  for new issues
 @app.route('/issue_created',methods=['POST'])
 def function_sprint_new_issue_response():
