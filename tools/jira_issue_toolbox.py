@@ -44,7 +44,7 @@ def set_source_by_owner(jira_key, jira=j.setup_jira_object()):
 
 
 def reported_by_yentel(payload):
-  return payload['reporter'] == 'cloudinaryentel'
+  return payload['reporter'] == 'yentel'
 
 def is_member_of_team(checked_user, team_name):
   #invoke the teams structure module
@@ -126,42 +126,9 @@ def enforce_qa_when_qa_team(jira_key, jira=j.setup_jira_object()):
   if is_member_of_team(payload['reporter'], 'QA') and not requires_qa(payload) and issue_is_bug(payload):
     enforce_qa_on_issue(jira_key, 'On Master')
 
-def enforce_qa_on_nml(jira_key, jira=j.setup_jira_object()):
-  payload = generate_payload_by_id.generate_payload(jira_key)
-  #if new issue is considered to be part of media library set the qa required to yes  
-  if is_media_library(payload) and not requires_qa(payload):
-    enforce_qa_on_issue(jira_key, 'On Master')
-
-def enforce_qa_on_uwd(jira_key, jira=j.setup_jira_object()):
-  payload = generate_payload_by_id.generate_payload(jira_key)
-  #if new issue contains Upload Widget in component list set the qa required to yes  
-  if is_upload_widget(payload) and not requires_qa(payload):
-    enforce_qa_on_issue(jira_key, 'On Master')
-
-def enforce_qa_on_media_library_widget(jira_key, jira=j.setup_jira_object()):
-  payload = generate_payload_by_id.generate_payload(jira_key)
-  issue = jira.issue(payload['issue_key'])
-  if is_media_library_widget(payload) and not requires_qa(payload):
-    enforce_qa_on_issue(jira_key, 'On Master')
-
-def enforce_qa_on_media_editing_widget(jira_key, jira=j.setup_jira_object()):
-  payload = generate_payload_by_id.generate_payload(jira_key)
-  issue = jira.issue(payload['issue_key'])
-  if is_media_editing_widget(payload) and not requires_qa(payload):
-    enforce_qa_on_issue(jira_key, 'On Master')
-
 def enforce_qa_on_issue(jira_key, desired_state, jira=j.setup_jira_object()):
   print "Enforcing QA on issue:", jira_key
   set_manual_qa_to(desired_state, jira_key, jira)
-
-def enforce_no_doc_on_nml(jira_key, jira=j.setup_jira_object()):
-  payload = generate_payload_by_id.generate_payload(jira_key)
-  #if new issue contains new_media_library or Media library as one of the components set the docs impact as no impact  
-  if is_media_library(payload) and issue_is_bug(payload) and (payload['docs_impact'] == 'Not set' or not payload['documentation']):
-    print "Since jira issue components contains new_media_library or Media Library will make sure it's not marked as docs impacting:", payload['issue_key']
-    issue = jira.issue(payload['issue_key'])
-    if 'APPS' in jira_key or 'CORE' in jira_key:
-      issue.update(fields={'customfield_12043': {'value': 'Not Applicable'}}) #set doc impact to no impact on old format project
 
 def is_status_merged(payload):
   return payload['status'] in ['Merged-Not Tested','Merged-Tested']
@@ -186,24 +153,6 @@ def is_issue_key_done(issue_key, jira=j.setup_jira_object()):
   issue = jira.issue(issue_key)
   issue_status = issue.raw['fields']['status']['name']
   return issue_status == 'Done'
-  
-def is_media_library(payload):
-  for component in payload['components']:
-    if 'DAM' in component:
-      return True
-  return False
-
-def is_upload_widget(payload):
-  for component in payload['components']:
-    if 'Upload Widget' in component:
-      return True
-  return False
-
-def is_media_library_widget(payload):
-  return 'media_library_widget' in payload['components']
-
-def is_media_editing_widget(payload):
-  return 'Media Editing Widget' in payload['components']
 
 def issue_has_priority(payload):
   return (payload['jira_priority'] != 'None')
@@ -268,17 +217,6 @@ def set_bugs_with_priority_as_ready(jira_key, jira=j.setup_jira_object()):
     if issue_is_bug(payload) and issue_has_priority(payload) and payload['status'] == 'To do':
       transition_to_status(payload['issue_key'], 'Ready for dev', jira)
 
-def set_sni_linked_issue_to_desired_state(jira_key, original_issue_state, jira=j.setup_jira_object()):
-  payload = generate_payload_by_id.generate_payload(jira_key)
-  if original_issue_state.lower().strip() == 'To do'.lower().strip():
-    return transition_to_status(payload['issue_key'], 'Pending Core Requirements', jira)
-  elif original_issue_state.lower().strip() == 'Requirements'.lower().strip() or original_issue_state.lower().strip() == 'Ready for dev'.lower().strip():
-    return transition_to_status(payload['issue_key'], 'Add Requirements', jira)
-  else:
-    print "original issue status is: " + original_issue_state + ", so no need to change linked issue status"
-    return False
-
-
 def issue_within_projects(payload, projects_to_check):
   return payload['project_name'] in projects_to_check
 
@@ -336,18 +274,6 @@ def remove_label_from_issue(jira_key, label_to_remove, jira=j.setup_jira_object(
   if label_to_remove in current_labels:
     current_labels.remove(label_to_remove)
     issue.update(fields={'labels': current_labels})
-
-def verify_issue_with_epic_has_roadmap_breakdown(payload, jira=j.setup_jira_object()):
-  if issue_has_epic(payload) and 'roadmap-breakdown' not in payload['labels']:
-    epic = jira.issue(payload['epic'])
-    if 'roadmap' in epic.fields.labels:
-      print payload['issue_key'] + ': Since issue has epic with marked roadmap label will add roadmap-breakdown'
-      add_label_to_issue(payload['issue_key'], 'roadmap-breakdown', jira)
-      
-def verify_story_without_epic_wont_have_roadmap_breakdown(payload, jira=j.setup_jira_object()):
-  if issue_is_story(payload) and not issue_has_epic(payload) and 'roadmap-breakdown' in payload['labels']:
-    print payload['issue_key'] + ': Since issue has no epic with marked roadmap label will remove roadmap-breakdown label'
-    remove_label_from_issue(payload['issue_key'], 'roadmap-breakdown', jira)
 
 def return_component_lead(comp_name, project_code ,jira=j.setup_jira_object()):
   #look for component lead
