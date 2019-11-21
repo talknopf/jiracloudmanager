@@ -13,6 +13,7 @@ I had two reasons - it costs money, and I would rather code it myself.
 # So, how does JCM work?
 
 In short, webhooks tell this tool what happens and the tool uses the JIRA API to take action.
+
 But to be more in depth:
 
 1. JIRA sends a webhook to the URL where this code is hosted (will work on anything able to run python flask).
