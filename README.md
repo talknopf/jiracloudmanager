@@ -16,7 +16,7 @@ In short, webhooks tell this tool what happens and the tool uses jira api to tak
 But to be more in depth, Jira send out a webhook to the url of wherever you hosted this code(will work on anything able to run python flask)
 In turn the code will decide if any action is needed and execute it via a 'service user'
 
-# what do you need to set up for it to work?\
+# what do you need to set up for it to work?
 1. In jira you will need a user with an API permissions
 2. Webhooks for the actions you wish to act upon, in my case the approche was to generate a call for all events.
    using a webhook for new issues and updated issues.
